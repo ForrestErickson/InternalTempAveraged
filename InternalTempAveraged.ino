@@ -10,7 +10,11 @@
    See ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf section 24.8 (page 256)
 
    Exponentially weighted moving average see:
+   https://en.wikipedia.org/wiki/Exponential_smoothing and
    https://en.wikipedia.org/wiki/Moving_average#Exponentially_weighted_moving_variance_and_standard_deviation
+
+   S0= X0; at t=0
+   St = alpha*Xt + (1-alpha)Xt-1 for t > 0
 
 */
 
@@ -27,6 +31,10 @@ long nextLEDchange = 100; //time in ms.
 
 //Main program variables
 float temperature = 0;
+float averageTemp = 0;  // Moving average window
+float expMovAvgTemp = 0; //Exponential Moving Average
+float alpha = 0.25;      //
+const float OFFSET = 10.0;
 
 
 //Functions
@@ -54,25 +62,47 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
   Serial.begin(BAUDRATE);
   delay(100);
-  Serial.println("\n\n\n\nBeginning: " + PROGRAM_NAME);
+  //  Serial.println("\n\n\n\nBeginning: " + PROGRAM_NAME);
 
-//Setup for internal temprature measurement
-  analogReference(INTERNAL);
+  Serial.print("Temperature");
+  Serial.print(", ");
+  Serial.print("Average");
+  Serial.print(", ");
+  Serial.println("EMA");
+
+  averageTemp = analogRead(8);      // Get a first measurement
+  expMovAvgTemp = averageTemp;      // For t=0
+
+  //Setup for internal temprature measurement
+  //  analogReference(INTERNAL);
 
 
-  
+
   digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
 }//end setup()
 
 void loop() {
   // put your main code here, to run repeatedly:
 
-//Average some temprature measurements
-  for(int i =0 ; i < 50; i++){
-    temperature = (temperature + analogRead(8))/2.0  ;
-  }
-  Serial.print("Temperature: ");
-  Serial.println(temperature);
+  //Average some temprature measurements
+  delay(10);
+    temperature = analogRead(8);
+    averageTemp = (averageTemp + temperature) / 2.0  ; //Two point average
+    //St = alpha*Xt + (1-alpha)Xt-1 for t > 0
+    expMovAvgTemp = alpha * temperature + (1 - alpha) * expMovAvgTemp;
+
+  
+
+  //EMA
+
+
+  //  Serial.print("Instanious Temperature: ");
+  Serial.print(temperature);
+  Serial.print(", ");
+  //  Serial.print("Average Temperature: ");
+  Serial.print(averageTemp + OFFSET);
+  Serial.print(", ");
+  Serial.println(expMovAvgTemp + (2.0 * OFFSET));
 
   wink();
 
