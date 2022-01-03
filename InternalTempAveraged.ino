@@ -114,7 +114,7 @@ void setup() {
   delay(100);
   //  Serial.println("\n\n\n\nBeginning: " + PROGRAM_NAME);
 
-  //Legeond for serial ploter
+  //Legend for serial plotter
   Serial.print("Temperature");
   Serial.print(", ");
   Serial.print("Average");
@@ -130,7 +130,7 @@ void setup() {
   averageTemp = analogRead(8);      // Get a first measurement
   expMovAvgTemp = averageTemp;      // For t=0
 
-  //  analogReference(INTERNAL); //Setup for internal 1.1V reference for ADC measurement
+  //analogReference(INTERNAL); //Setup for internal 1.1V reference for ADC measurement
   //analogReference(EXTERNAL); //Setup for external voltage on Vref pin.
 
   digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
