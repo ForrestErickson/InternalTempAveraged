@@ -41,7 +41,7 @@ float averageTemp = 0;  // Moving average window
 float expMovAvgTemp = 0; //Exponential Moving Average
 float varanceEMATemp = 0; //Variance of the EMA
 float sigma = 0;
-float standardDev = 0;
+double standardDev = 0;
 //float alpha = 0.125;      //
 float alpha = 0.0625;      //
 const float OFFSET = 5.0; //An offset so that we can distinguish one plot from another
@@ -67,29 +67,26 @@ void updateTemperature(void) {
 
 //Print graphs of the updated temprature
 void printTemp2ptAvgEMAStd(void) {
-  //  Serial.print("Instanious Temperature: ");
   Serial.print(temperature);
   Serial.print(", ");
-  //  Serial.print("Average Temperature: ");
   Serial.print(averageTemp - OFFSET);
   Serial.print(", ");
-  //  Serial.print(expMovAvgTemp - (2.0 * OFFSET));
   Serial.print(expMovAvgTemp );
   Serial.print(", ");
+  Serial.print(expMovAvgTemp + standardDev);
+  Serial.print(", ");
+  Serial.println(expMovAvgTemp - standardDev);
 
-  //  //Print with varance
+  //  //Print offset varance
   //  Serial.print(expMovAvgTemp - (2.0 * OFFSET)+ varanceEMATemp);
   //  Serial.print(", ");
   //  Serial.println(expMovAvgTemp - (2.0 * OFFSET)- varanceEMATemp);
 
-  // Print with standardDev
+  // Print offset standardDev
   //  Serial.print(expMovAvgTemp - (2.0 * OFFSET)+ standardDev);
   //  Serial.print(", ");
   //  Serial.println(expMovAvgTemp - (2.0 * OFFSET)- standardDev);
 
-  Serial.print(expMovAvgTemp + standardDev);
-  Serial.print(", ");
-  Serial.println(expMovAvgTemp - standardDev);
 }//end printTemp2ptAvgEMAStd()
 
 //Wink the build in LED
@@ -133,10 +130,8 @@ void setup() {
   averageTemp = analogRead(8);      // Get a first measurement
   expMovAvgTemp = averageTemp;      // For t=0
 
-  //Setup for internal 1.1V reference for ADC measurement
-  //  analogReference(INTERNAL);
-
-
+  //  analogReference(INTERNAL); //Setup for internal 1.1V reference for ADC measurement
+  //analogReference(EXTERNAL); //Setup for external voltage on Vref pin.
 
   digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
 }//end setup()
@@ -145,7 +140,6 @@ void loop() {
   // put your main code here, to run repeatedly:
 
   updateTemperature();
-
 
   wink();
 
