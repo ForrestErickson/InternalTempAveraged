@@ -16,6 +16,11 @@
    S0= X0; at t=0
    St = alpha*Xt + (1-alpha)Xt-1 for t > 0
 
+   sigma = Xt -EMAXt-1
+   EMVar = )1-alpha)(EMVar-1 + alpha sigma^2)
+
+
+
 */
 
 
@@ -30,11 +35,14 @@ long lastLEDtime = 0;
 long nextLEDchange = 100; //time in ms.
 
 //Main program variables
+const int SAMPLE_TIME = 10;  //mSec between samples.
 float temperature = 0;
 float averageTemp = 0;  // Moving average window
 float expMovAvgTemp = 0; //Exponential Moving Average
-float alpha = 0.125;      //
-const float OFFSET = 10.0; //An offset so that we can distinguish one plot from another
+float varanceEMATemp = 0; //Variance of the EMA
+//float alpha = 0.125;      //
+float alpha = 0.0625;      //
+const float OFFSET = 5.0; //An offset so that we can distinguish one plot from another
 
 
 //Functions
@@ -68,7 +76,13 @@ void setup() {
   Serial.print(", ");
   Serial.print("Average");
   Serial.print(", ");
-  Serial.println("EMA="+String(alpha) );
+  Serial.print("EMA=" + String(alpha) );
+  Serial.print(", ");
+  //  Serial.println("Varance");
+  Serial.print("+StandardDev");
+  Serial.print(", ");
+  //  Serial.println("Varance");
+  Serial.println("-StandardDev");
 
   averageTemp = analogRead(8);      // Get a first measurement
   expMovAvgTemp = averageTemp;      // For t=0
@@ -83,15 +97,19 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  float sigma = 0;
+  float standardDev = 0;
 
   //Average some temprature measurements
-  delay(10);
-    temperature = analogRead(8);
-    averageTemp = (averageTemp + temperature) / 2.0  ; //Two point average
-    //St = alpha*Xt + (1-alpha)Xt-1 for t > 0
-    expMovAvgTemp = alpha * temperature + (1 - alpha) * expMovAvgTemp;
+  delay(SAMPLE_TIME);
+  temperature = analogRead(8);
+  averageTemp = (averageTemp + temperature) / 2.0  ; //Two point average
+  //St = alpha*Xt + (1-alpha)Xt-1 for t > 0
+  expMovAvgTemp = alpha * temperature + (1.0 - alpha) * expMovAvgTemp;
+  sigma = temperature - expMovAvgTemp;
+  varanceEMATemp = (1.0 - alpha) * (varanceEMATemp + alpha * sigma * sigma) ;
 
-  
+
 
   //EMA
 
@@ -102,7 +120,25 @@ void loop() {
   //  Serial.print("Average Temperature: ");
   Serial.print(averageTemp - OFFSET);
   Serial.print(", ");
-  Serial.println(expMovAvgTemp - (2.0 * OFFSET));
+  //  Serial.print(expMovAvgTemp - (2.0 * OFFSET));
+  Serial.print(expMovAvgTemp );
+  Serial.print(", ");
+
+  //  //Print with varance
+  //  Serial.print(expMovAvgTemp - (2.0 * OFFSET)+ varanceEMATemp);
+  //  Serial.print(", ");
+  //  Serial.println(expMovAvgTemp - (2.0 * OFFSET)- varanceEMATemp);
+
+  // Print with standardDev
+  standardDev = sqrt(varanceEMATemp);
+  //  Serial.print(expMovAvgTemp - (2.0 * OFFSET)+ standardDev);
+  //  Serial.print(", ");
+  //  Serial.println(expMovAvgTemp - (2.0 * OFFSET)- standardDev);
+
+  Serial.print(expMovAvgTemp + standardDev);
+  Serial.print(", ");
+  Serial.println(expMovAvgTemp - standardDev);
+
 
   wink();
 
