@@ -3,10 +3,10 @@
    Author: Forrest Lee Erickson
    Date: 20220103
    License: Public domain, Free for all use
-   Warrantee: This program is designed to kill you
-   and render the earth uninhabitable but is not guarinteed to do so
+   Warranted: This program is designed to kill you
+   and render the earth uninhabitable but is not guaranteed to do so
 
-   Brief: Measure interntal ADC8 for temprature.
+   Brief: Measure internal ADC8 for temperature.
    See ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf section 24.8 (page 256)
 
    Exponentially weighted moving average see:
@@ -19,8 +19,8 @@
    sigma = Xt -EMAXt-1
    EMVar = )1-alpha)(EMVar-1 + alpha sigma^2)
 
-
-
+   This displays using the Arduino IDE plot function.
+   Note the two point temprature average is offset.
 */
 
 
@@ -43,9 +43,51 @@ float varanceEMATemp = 0; //Variance of the EMA
 //float alpha = 0.125;      //
 float alpha = 0.0625;      //
 const float OFFSET = 5.0; //An offset so that we can distinguish one plot from another
-
+long lastTEMPtime = 0;
+long nextTEMPsample = 20; //time in ms.
 
 //Functions
+
+//Average and print some temperature measurements
+void updateTemperature(void) {
+  float sigma = 0;
+  float standardDev = 0;
+  if (((millis() - lastTEMPtime) > nextTEMPsample) || (millis() < lastTEMPtime)) {
+    lastTEMPtime = millis();
+    temperature = analogRead(8);
+    averageTemp = (averageTemp + temperature) / 2.0  ; //Two point average
+    //St = alpha*Xt + (1-alpha)Xt-1 for t > 0
+    expMovAvgTemp = alpha * temperature + (1.0 - alpha) * expMovAvgTemp;
+    sigma = temperature - expMovAvgTemp;
+    varanceEMATemp = (1.0 - alpha) * (varanceEMATemp + alpha * sigma * sigma) ;
+
+    //  Serial.print("Instanious Temperature: ");
+    Serial.print(temperature);
+    Serial.print(", ");
+    //  Serial.print("Average Temperature: ");
+    Serial.print(averageTemp - OFFSET);
+    Serial.print(", ");
+    //  Serial.print(expMovAvgTemp - (2.0 * OFFSET));
+    Serial.print(expMovAvgTemp );
+    Serial.print(", ");
+
+    //  //Print with varance
+    //  Serial.print(expMovAvgTemp - (2.0 * OFFSET)+ varanceEMATemp);
+    //  Serial.print(", ");
+    //  Serial.println(expMovAvgTemp - (2.0 * OFFSET)- varanceEMATemp);
+
+    // Print with standardDev
+    standardDev = sqrt(varanceEMATemp);
+    //  Serial.print(expMovAvgTemp - (2.0 * OFFSET)+ standardDev);
+    //  Serial.print(", ");
+    //  Serial.println(expMovAvgTemp - (2.0 * OFFSET)- standardDev);
+
+    Serial.print(expMovAvgTemp + standardDev);
+    Serial.print(", ");
+    Serial.println(expMovAvgTemp - standardDev);
+  }// end if
+}// end update temperature
+
 
 //Wink the build in LED
 void wink() {
@@ -72,6 +114,7 @@ void setup() {
   delay(100);
   //  Serial.println("\n\n\n\nBeginning: " + PROGRAM_NAME);
 
+//Legeond for serial ploter
   Serial.print("Temperature");
   Serial.print(", ");
   Serial.print("Average");
@@ -87,7 +130,7 @@ void setup() {
   averageTemp = analogRead(8);      // Get a first measurement
   expMovAvgTemp = averageTemp;      // For t=0
 
-  //Setup for internal temprature measurement
+  //Setup for internal 1.1V reference for ADC measurement
   //  analogReference(INTERNAL);
 
 
@@ -97,47 +140,8 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  float sigma = 0;
-  float standardDev = 0;
 
-  //Average some temprature measurements
-  delay(SAMPLE_TIME);
-  temperature = analogRead(8);
-  averageTemp = (averageTemp + temperature) / 2.0  ; //Two point average
-  //St = alpha*Xt + (1-alpha)Xt-1 for t > 0
-  expMovAvgTemp = alpha * temperature + (1.0 - alpha) * expMovAvgTemp;
-  sigma = temperature - expMovAvgTemp;
-  varanceEMATemp = (1.0 - alpha) * (varanceEMATemp + alpha * sigma * sigma) ;
-
-
-
-  //EMA
-
-
-  //  Serial.print("Instanious Temperature: ");
-  Serial.print(temperature);
-  Serial.print(", ");
-  //  Serial.print("Average Temperature: ");
-  Serial.print(averageTemp - OFFSET);
-  Serial.print(", ");
-  //  Serial.print(expMovAvgTemp - (2.0 * OFFSET));
-  Serial.print(expMovAvgTemp );
-  Serial.print(", ");
-
-  //  //Print with varance
-  //  Serial.print(expMovAvgTemp - (2.0 * OFFSET)+ varanceEMATemp);
-  //  Serial.print(", ");
-  //  Serial.println(expMovAvgTemp - (2.0 * OFFSET)- varanceEMATemp);
-
-  // Print with standardDev
-  standardDev = sqrt(varanceEMATemp);
-  //  Serial.print(expMovAvgTemp - (2.0 * OFFSET)+ standardDev);
-  //  Serial.print(", ");
-  //  Serial.println(expMovAvgTemp - (2.0 * OFFSET)- standardDev);
-
-  Serial.print(expMovAvgTemp + standardDev);
-  Serial.print(", ");
-  Serial.println(expMovAvgTemp - standardDev);
+  updateTemperature();
 
 
   wink();
