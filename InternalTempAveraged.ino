@@ -25,6 +25,10 @@ const int LOW_TIME_LED = 100;
 long lastLEDtime = 0;
 long nextLEDchange = 100; //time in ms.
 
+//Main program variables
+float temperature = 0;
+
+
 //Functions
 
 //Wink the build in LED
@@ -52,12 +56,23 @@ void setup() {
   delay(100);
   Serial.println("\n\n\n\nBeginning: " + PROGRAM_NAME);
 
+//Setup for internal temprature measurement
+  analogReference(INTERNAL);
 
+
+  
   digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
 }//end setup()
 
 void loop() {
   // put your main code here, to run repeatedly:
+
+//Average some temprature measurements
+  for(int i =0 ; i < 50; i++){
+    temperature = (temperature + analogRead(8))/2.0  ;
+  }
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
 
   wink();
 
