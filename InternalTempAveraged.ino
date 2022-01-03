@@ -6,7 +6,10 @@
    Warranted: This program is designed to kill you
    and render the earth uninhabitable but is not guaranteed to do so
 
-   Brief: Measure internal ADC8 for temperature.
+   Brief: Measure internal ADC8 for temperature. 
+   Make two kinds of average. Moving average and exponential moving average
+
+   References:
    See ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf section 24.8 (page 256)
 
    Exponentially weighted moving average see:
@@ -20,7 +23,7 @@
    EMVar = )1-alpha)(EMVar-1 + alpha sigma^2)
 
    User should display data using the Arduino IDE serial plotter feature.
-   Note: the two point temprature average is offset.
+   Note: the two point moving average is offset.
 */
 
 
