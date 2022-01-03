@@ -33,8 +33,8 @@ long nextLEDchange = 100; //time in ms.
 float temperature = 0;
 float averageTemp = 0;  // Moving average window
 float expMovAvgTemp = 0; //Exponential Moving Average
-float alpha = 0.25;      //
-const float OFFSET = 10.0;
+float alpha = 0.125;      //
+const float OFFSET = 10.0; //An offset so that we can distinguish one plot from another
 
 
 //Functions
@@ -68,7 +68,7 @@ void setup() {
   Serial.print(", ");
   Serial.print("Average");
   Serial.print(", ");
-  Serial.println("EMA");
+  Serial.println("EMA="+String(alpha) );
 
   averageTemp = analogRead(8);      // Get a first measurement
   expMovAvgTemp = averageTemp;      // For t=0
@@ -100,9 +100,9 @@ void loop() {
   Serial.print(temperature);
   Serial.print(", ");
   //  Serial.print("Average Temperature: ");
-  Serial.print(averageTemp + OFFSET);
+  Serial.print(averageTemp - OFFSET);
   Serial.print(", ");
-  Serial.println(expMovAvgTemp + (2.0 * OFFSET));
+  Serial.println(expMovAvgTemp - (2.0 * OFFSET));
 
   wink();
 
