@@ -3,7 +3,7 @@
    Author: Forrest Lee Erickson
    Date: 20220103
    License: Public domain, Free for all use
-   Warranted: This program is designed to kill you
+   Warranty: This program is designed to kill you
    and render the earth uninhabitable but is not guaranteed to do so
 
    Brief: Measure internal ADC8 for temperature. 
